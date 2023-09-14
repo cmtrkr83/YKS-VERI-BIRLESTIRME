@@ -1,0 +1,6 @@
+YKS sonuçları kkiste yayınlandıktan sonra dosyaları (excel formatında) indirmeniz gerekir.
+dosya isimlerinin değişmesi sorun teşkil etmese de dosya ismi sayfa ismi kısımlarında değişiklik yapmayınız.
+tüm okul evrakları okul adına düzenlenmiş tek klasöre toplancak
+ilçe tüm okulları ilçe adı ile bir klasörde toplayacak
+bu klasör programa gösterilirse program bu klasörlerdeki excel dosyalarını gruplayıp birleştirecektir.
+output dosyaları ana program klasörüne ayrı ayrı kaydedilir.
