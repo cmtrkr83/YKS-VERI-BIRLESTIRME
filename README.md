@@ -1,0 +1,10 @@
+YKS sonuçları kkiste yayınlandıktan sonra dosyaları (excel formatında) indirmeniz gerekir.
+dosya isimlerinin değişmesi sorun teşkil etmese de dosya ismi sayfa ismi kısımlarında değişiklik yapmayınız.
+tüm okul evrakları okul adına düzenlenmiş tek klasöre toplancak
+ilçe tüm okulları ilçe adı ile bir klasörde toplayacak
+programda excel olarak klasörlerin içinde görülen dosyalar her okul adına 4 adet osym den alınmış belgeleri temsil eder.
+bu klasör programa gösterilirse program bu klasörlerdeki excel dosyalarını gruplayıp birleştirecektir.
+output dosyaları ana program klasörüne ayrı ayrı kaydedilir.
+birleşmiş dosyalar ile ilçe yada il bazında yada bölge bazında (ne kadar veriye sahip iseniz) her veri tipinde bir excel dosyası elde edersiniz.
+bu excel dosyasını daha sonra kullanacağınız veri analiz programlarında kolayca işleyebilirsiniz. en basit yöntem pivot table ile işlemektir.
+2025 yılında güncel oalrak çalışmaktadır.
