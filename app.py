@@ -1,29 +1,45 @@
 import os
+from tkinter import *
+from tkinter import messagebox
 import pandas as pd
 from tkinter import filedialog
 import tkinter as tk
-from tkinter import *
-from tkinter.messagebox import *
 from tkinter import ttk
+import subprocess
+
+
 
 root = tk.Tk()
-root.iconbitmap("odm.ico")
-root.geometry("250x340")
-root.resizable(False, False)
 root.title("KODM  | YKS VERİ TOPLAMA")
+root.geometry("350x150")
+root.resizable(False, False)
 
+output_folder = os.path.join(os.path.expanduser("~"), "Documents")
 
 def open_directory():
     global ana_klasor
-    # Ana klasör yolunu belirtin
     ana_klasor = filedialog.askdirectory()
+    selected_folder_label.config(text=ana_klasor if ana_klasor else "Klasör seçilmedi.")
 
-
-# DataFrame'leri depolamak için boş bir sözlük oluşturun
 dataframeler = {}
 
 
 def birlestir():
+    dataframeler.clear()
+    # Tüm işlenecek dosyaları önceden say
+    toplam_dosya = 0
+    for klasor, alt_klasorler, dosyalar in os.walk(ana_klasor):
+        for dosya in dosyalar:
+            if dosya.endswith(".xls"):
+                toplam_dosya += 1
+
+    progress["maximum"] = toplam_dosya
+    progress["value"] = 0
+    root.update_idletasks()
+
+    atlanan_dosyalar = []
+
+    islenen = 0
     # Alt klasörleri dolaşın
     for klasor, alt_klasorler, dosyalar in os.walk(ana_klasor):
         # Her Excel dosyası için döngü oluşturun
@@ -32,27 +48,33 @@ def birlestir():
                 ".xls"
             ):  # Sadece Excel dosyalarını işleyin, isterseniz .xls veya .csv olarak değiştirebilirsiniz
                 dosya_yolu = os.path.join(klasor, dosya)
-
+                try:
                 # Excel dosyasını okuyun
-                excel_verileri = pd.read_excel(dosya_yolu, sheet_name=None)
+                    excel_verileri = pd.read_excel(dosya_yolu, sheet_name=None)
 
                 # Her sayfayı ayrı ayrı DataFrame'e dönüştürerek kaydedin
-                for sayfa_adi, veri in excel_verileri.items():
-                    df = pd.DataFrame(veri)
+                    for sayfa_adi, veri in excel_verileri.items():
+                        df = pd.DataFrame(veri)
                     #########################################################################
-                    baslik = (str((df.iloc[1, 5]))).split("\n")
-                    baslik = baslik[1]
-                    baslik = baslik.split("(")
-                    okul = baslik[0]
-                    ilce = baslik[1]
-                    ilce = ilce.split()
-                    ilce = ilce[2]
-                    ilce = ilce[: len(ilce) - 1]
-                    okul = okul.strip()
-                    df.insert(2, "İLÇE", "")
-                    df.insert(3, "OKUL", "")
-                    df["OKUL"] = okul
-                    df["İLÇE"] = ilce
+                        try:
+                            baslik = (str((df.iloc[1, 5]))).split("\n")
+                            print(dosya_yolu)
+                            baslik = baslik[1]
+                            baslik = baslik.split("(")
+                            okul = baslik[0]
+                            ilce = baslik[1]
+                            ilce = ilce.split()
+                            ilce = ilce[2]
+                            ilce = ilce[: len(ilce) - 1]
+                            okul = okul.strip()
+                            df.insert(2, "İLÇE", "")
+                            df.insert(3, "OKUL", "")
+                            df["OKUL"] = okul
+                            df["İLÇE"] = ilce
+                        except Exception:
+                            print(f"Başlık bulunamadı: {dosya_yolu}")
+                            atlanan_dosyalar.append(dosya_yolu)
+                            continue
                     ############################################################################
                     if sayfa_adi == "OkulAytTestSonucListesi":
                         satir_atlama_miktari = 11
@@ -198,20 +220,46 @@ def birlestir():
                         dataframeler[sayfa_adi] = pd.concat(
                             [dataframeler[sayfa_adi], df]
                         )
-
+                except Exception:
+                    print(f"Dosya okunamadı: {dosya_yolu}")
+                    atlanan_dosyalar.append(dosya_yolu)
+                islenen += 1
+                progress["value"] = islenen
+                root.update_idletasks()
     for df in dataframeler:
         # Tümü boş olan sütunları silme işlemi
         dataframeler[df] = dataframeler[df].loc[
             :, dataframeler[df].notnull().any(axis=0)
         ]
     for sayfa_adi, df in dataframeler.items():
-        dosya_adi = f"{sayfa_adi}_birlesmis.xlsx"
+        yil = pd.to_datetime("today").year
+        dosya_adi = os.path.join(output_folder, f"{yil}_{sayfa_adi}_birlesmis.xlsx")
         df.to_excel(dosya_adi, index=False)
-
+    if atlanan_dosyalar:
+        messagebox.showwarning(
+            "Atlanan Dosyalar",
+            "Bazı dosyalar işlenemedi:\n" + "\n".join(atlanan_dosyalar)
+        )
+    messagebox.showinfo(
+        "İşlem Tamamlandı",
+        "İşlem tamamlandı! Birleşmiş dosyalar Belgeler dizininde oluşturuldu.",
+    )
+def open_output_folder():
+    output_folder = os.path.join(os.path.expanduser("~"), "Documents")
+    subprocess.Popen(f'explorer "{output_folder}"')
 
 ttk.Label(root, text="YKS SONUÇLARINI BİRLEŞTİR", style="o.TLabel").pack(pady=5, padx=5)
-ttk.Button(root, text="Gözat", command=open_directory, style="Custom.TButton").pack(
-    pady=5
-)
-ttk.Button(root, text="Birleştir", command=birlestir, style="ask.TButton").pack(pady=5)
+selected_folder_label = ttk.Label(root, text="Klasör seçilmedi.", wraplength=220)
+selected_folder_label.pack(pady=2)
+button_frame = ttk.Frame(root)
+button_frame.pack(pady=5)
+
+ttk.Button(button_frame, text="Gözat", command=open_directory, style="Custom.TButton").pack(side=LEFT, padx=5)
+ttk.Button(button_frame, text="Birleştir", command=birlestir, style="ask.TButton").pack(side=LEFT, padx=5)
+ttk.Button(button_frame, text="Klasörü Aç", command=open_output_folder).pack(side=LEFT, padx=5)
+progress = ttk.Progressbar(root, orient="horizontal", length=200, mode="determinate")
+progress.pack(pady=10, padx=5, fill="x", expand=True)
+
+
+    
 root.mainloop()
