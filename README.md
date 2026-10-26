@@ -1,85 +1,106 @@
-<!-- Badges -->
-![Status](https://img.shields.io/badge/status-active-brightgreen.svg) ![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg) ![Platform](https://img.shields.io/badge/platform-macOS%20|%20Linux%20|%20Windows-lightgrey.svg)
+# YKS Veri Birleştirme
 
-# 🧩 YKS VERİ BİRLEŞTİRME
+> A tiny desktop tool that merges ÖSYM YKS school-level Excel exports into clean yearly workbooks.
 
-Bu proje, ÖSYM'den alınmış okul düzeyindeki YKS sonuçlarını içeren Excel (.xls) dosyalarını tarayıp, sayfa türlerine göre birleştirerek yıllık Excel çıktı dosyaları oluşturur.
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Tkinter](https://img.shields.io/badge/UI-Tkinter-FFD43B?style=flat-square)](#usage)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-Özet
-- 🔎 GUI üzerinden bir ana klasör seçin (ana klasör: ilçe klasörlerini içeren dizin).
-- 🗂️ Program, alt klasörlerdeki her `.xls` dosyasını okuyup, sayfa adına göre aynı yapıda olanları birleştirir.
-- 📁 Oluşan birleştirilmiş Excel dosyaları `~/Documents` (Belgeler) klasörüne `YIL_<SayfaAdi>_birlesmis.xlsx` formatında kaydedilir.
+<p align="center">
+  <a href="https://www.buymeacoffee.com/cmtrkr"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee"></a>
+</p>
 
-Öne çıkan özellikler
-- 🖥️ Basit Tkinter GUI (pencere ile çalışır).
-- 📄 Desteklenen sayfa tipleri (kod içinde tanımlı isimlere göre):
-	- ✅ `OkulAytTestSonucListesi`
-	- ✅ `OkulYksTestSonucListesi`
-	- ✅ `OkulYksPuanlariListesi`
-	- ✅ `OkulYksYerlestirmePuanlariListe`
-- ⚠️ Hatalı veya beklenmeyen formatta olan dosyalar atlanır; işlem sonunda hangi dosyaların atlandığı gösterilir.
+YKS Veri Birleştirme is a small Tkinter application for district education offices. Point it at a folder tree of `.xls` files exported from ÖSYM, and it walks every subfolder, reads each workbook, groups sheets by type, and writes one merged `.xlsx` per sheet type into `~/Documents`.
 
-Gereksinimler
-- 🐍 Python 3.8 veya üzeri
-- 📦 Paketler (pip ile kurulabilir): `pandas`, `xlrd`, `openpyxl`
+It is intentionally simple: no database, no server, no installation wizard — one Python script and a native window.
 
-Örnek kurulum
+## 📸 Screenshot
+
+<p align="center">
+  <img src="docs/screenshots/gui.png" width="560" alt="YKS Veri Birleştirme Tkinter window with folder picker and merge buttons">
+  <br>
+  <sub>Representative preview built from the app's real Tkinter layout and labels — not a screen capture.</sub>
+</p>
+
+## ✨ Features
+
+- 🖥️ **Native Tkinter GUI** — choose a folder, press **Birleştir**, watch the progress bar.
+- 🔎 **Recursive scan** — walks district → school subfolders and processes every `.xls` file.
+- 📑 **Sheet-aware merging** — supported sheet types:
+  - `OkulAytTestSonucListesi`
+  - `OkulYksTestSonucListesi`
+  - `OkulYksPuanlariListesi`
+  - `OkulYksYerlestirmePuanlariListe`
+- 🗂️ **Yearly outputs** — writes `YIL_<SheetName>_birlesmis.xlsx` to `~/Documents`.
+- ⚠️ **Skip reporting** — files with unexpected headers are skipped and listed at the end.
+- 📦 **PyInstaller ready** — `gui.spec` builds a standalone desktop app.
+- 🧾 **Extended variant** — `app_xlsx.py` adds `.xlsx` support and a log file.
+
+## 📋 Requirements
+
+- Python 3.8+
+- `pandas`, `xlrd`, `openpyxl`
 
 ```bash
 python3 -m pip install --user pandas xlrd openpyxl
 ```
 
-Giriş — beklenen klasör yapısı
-
-```text
-input/          # ana giriş dizini (örnek)
-	ilçe-1/
-		okul-1/
-			*.xls     # Okula ait OSYM çıktıları
-		okul-2/
-			*.xls
-	ilçe-2/
-		okul-1/
-			*.xls
-```
-
-Notlar ve ipuçları
-- ⚙️ Program şu an yalnızca `.xls` uzantısını tarar. Eğer `.xlsx` dosyalarınız varsa, `app.py` içinde uzantı kontrolünü `dosya.endswith(('.xls', '.xlsx'))` şeklinde genişletin ve gerekli engine'leri (`openpyxl`) kullanın.
-- 🏷️ Kod, her Excel dosyasında belirli bir başlık yapısına (`df.iloc[1,5]`) dayanarak okul/ilçe bilgisini çıkarmaya çalışır; bu başlık formatı farklıysa dosya atlanır.
-- 📣 Atlanan dosyalar işlem sonunda bir uyarıda listelenir; listeyi kontrol edip gerekiyorsa dosya formatını düzeltin.
-
-Nasıl çalıştırılır
-
-1. Gerekli paketleri kurun (yukarıya bakın).
-2. Proje dizininde `app.py` dosyasını çalıştırın:
+## 🚀 Usage
 
 ```bash
 python3 app.py
 ```
 
-3. Pencerede "Gözat" ile ana klasörü seçin → "Birleştir"e tıklayın.
-4. İşlem tamamlandığında oluşan dosyalar `~/Documents` dizinine yazılır.
+1. Click **Gözat** and choose the root folder that contains district folders.
+2. Click **Birleştir**.
+3. The merged workbooks appear in your Documents folder.
+4. Use **Klasörü Aç** to open the output folder.
 
-Çıktı örneği
-- `2025_OkulYksTestSonucListesi_birlesmis.xlsx` gibi yıllık-sayfa bazlı dosyalar oluşur (yıl dinamik olarak belirlenir).
+Expected input layout:
 
-Ek: PyInstaller ile dağıtım
+```text
+input/
+├── district-1/
+│   ├── school-1/*.xls
+│   └── school-2/*.xls
+└── district-2/
+    └── school-1/*.xls
+```
 
-Proje kökünde `gui.spec` var; tek dosya uygulama yapmak isterseniz örnek:
+For `.xlsx` inputs, run `app_xlsx.py` instead.
+
+## 🏗️ Project structure
+
+```text
+├── app.py          # Tkinter GUI + .xls merge logic
+├── app_xlsx.py     # Extended .xlsx variant with logging
+├── gui.spec        # PyInstaller build spec
+├── odm.ico         # Windows icon
+└── input/          # Example input tree
+```
+
+## 📦 Build a standalone app
 
 ```bash
 pyinstaller --noconsole gui.spec
 ```
 
-Sorun giderme
-- ❗ Eğer `ImportError` veya "Dosya okunamadı" hatası alırsanız önce `pandas` ve `xlrd` kurulumunu kontrol edin.
-- 🔍 Dosyalar atlanıyorsa, örnek atılan dosyadan başlık satırını (`df.iloc[1,5]`) inceleyin; kod okul/ilçe bilgisini buradan çıkarır.
+## ⚠️ Notes
 
-Katkıda bulunmak isterseniz
-- ✍️ `app.py` içinde küçük geliştirmeler yapabilirsiniz. Öneriler:
-	- `.xlsx` desteği ekleyin
-	- Hata/uyarı log'unu bir dosyaya yazdırın
+- The UI is in Turkish.
+- The parser expects ÖSYM's school-level sheet layout, including the header at `df.iloc[1,5]`. Different exports may be skipped.
+- Merges can take a while for large district trees; keep the app window open.
+- Always keep the original `.xls` files; the tool only writes new `.xlsx` outputs.
+- Not an official ÖSYM application.
 
------------------------------------
+## ❤️ Support
 
-2025 — Güncel, sade ve görselleştirilmiş README
+If this saves you a day of copy-paste, you can buy me a coffee:
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/cmtrkr"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee"></a>
+</p>
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 Cem Türker.
